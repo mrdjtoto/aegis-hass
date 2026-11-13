@@ -1,3 +1,65 @@
+# Aegis for Ajax — read-only fork
+
+> **This is a fork of [bvis/aegis-hass](https://github.com/bvis/aegis-hass)** (all credit for the Ajax protocol work goes to the original author).
+> **It removes everything that can arm or disarm your alarm.** What is left only *reads*: the sensors you already own.
+
+## Why this fork exists
+The original integration gives Home Assistant the same powers as the Ajax app: it can arm, disarm, bypass detectors,
+press the panic button, switch relays and change device settings. If you only want **home automation with the Ajax
+sensors you already have** (a window opens → turn the heating off, motion in the hallway → turn the light on, a leak
+→ notify me, a battery is low…), those powers are risk without benefit: anyone or anything that gets into your Home
+Assistant (a shared dashboard, a leaked token, a bad automation) would be one click away from disarming your alarm.
+
+In this fork Home Assistant **cannot** arm, disarm, bypass or press the panic button through Aegis, by design.
+
+## What you get
+`binary_sensor` (doors and windows, motion, smoke, leak, tamper, CO, heat, glass break…), `sensor` (battery, signal,
+temperature, humidity…), `event` and `update` (read-only firmware info), delivered in real time over the same
+gRPC stream the Ajax app uses. The login, 2FA, re-authentication, device removal and DHCP discovery code is left
+untouched from the original (this fork has only been tested by its author, on one installation).
+
+## What is removed
+- No alarm control panel, buttons, switches, lights, locks, valves, numbers, selects or cameras.
+- No `force_arm`, `force_arm_night`, `disarm_night_mode`, `press_panic_button` or settings services; only the three
+  account-session services remain (`list_client_sessions`, `terminate_client_session`, `terminate_other_client_sessions`).
+- On top of that, every API method that sends a command is blocked in code (`@read_only`), so a future change
+  cannot re-enable it by accident. `tests/test_readonly_build.py` checks this and needs no Home Assistant:
+  `pytest --noconftest tests/test_readonly_build.py` (the original tests of the removed features are not expected to pass).
+
+Details and the exact list: [READONLY.md](READONLY.md).
+
+## Install
+Home Assistant 2025.11 or newer. Copy `custom_components/aegis_ajax/` into your `config/custom_components/`, restart,
+then **Settings → Devices & services → Add integration → "Aegis for Ajax (read-only)"**. Choose **Primary account**
+(a *commands-only* account loads nothing in this fork). You can also add this repository as a custom repository in
+HACS (standard HACS feature, not tested here). Use the **same configuration steps and App Label** as the original, see
+the upstream documentation below.
+
+## Security notes (please read)
+- **Use a dedicated Ajax account** for Home Assistant (invite it to your space), not your main login.
+- **This fork does not protect the stored credentials.** Home Assistant keeps the Ajax password hash and session
+  token in `core.config_entries`; anyone who can read that file can talk to Ajax directly. Treat it like any other
+  secret: restrict access to the host, and change the Ajax password if you suspect a leak.
+- For the alarm *state* and arm/disarm *notifications* you can use Home Assistant's built-in, one-way
+  [SIA integration](https://www.home-assistant.io/integrations/sia/) (the hub sends events, Home Assistant cannot reply).
+  An automation on the SIA disarm event (`OG` on the hubs we have seen; `CG` is arming) tells you whenever the alarm
+  is disarmed, whoever did it.
+
+## Not affiliated
+Unofficial and not endorsed by Ajax Systems. MIT licensed, like the original. Use at your own risk.
+
+## Staying up to date with the original
+This fork is the branch `readonly-sensors` on top of upstream: `git fetch upstream && git rebase upstream/main`, then
+make sure any **new** command method the original adds is wrapped with `@read_only` (the test fails if one of the
+known ones loses it).
+
+---
+
+# Original README (upstream)
+
+> The sections below describe the **original** integration. Everything about arming, disarming, panels, buttons,
+> switches, locks, cameras and the force-arm / panic services does **not** exist in this fork.
+
 # Aegis for Ajax — Home Assistant Integration
 
 [![Marketplace](https://img.shields.io/badge/Marketplace-Default-41BDF5.svg)](https://www.home-assistant.io/integrations/marketplace/)
