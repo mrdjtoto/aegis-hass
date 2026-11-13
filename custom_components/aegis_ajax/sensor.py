@@ -27,6 +27,7 @@ from custom_components.aegis_ajax.api.models import MonitoringCompanyStatus
 from custom_components.aegis_ajax.coordinator import AjaxCobrandedCoordinator
 from custom_components.aegis_ajax.device_handlers import capabilities_for
 from custom_components.aegis_ajax.entity import build_device_info
+from custom_components.aegis_ajax.security_state_sensor import build_security_state_sensors
 
 # Fallback voltage used to derive instantaneous power when the device
 # hasn't reported a real voltage reading yet (#123). Recent WallSwitch
@@ -204,6 +205,9 @@ async def async_setup_entry(
                 entities.append(AjaxDevicePowerSensor(coordinator, device_id))
             else:
                 entities.append(AjaxDeviceDerivedPowerSensor(coordinator, device_id))
+
+    # READ-ONLY BUILD: arming state of the space and of each group, in place of the alarm panels.
+    entities.extend(build_security_state_sensors(coordinator))
 
     async_add_entities(entities)
 

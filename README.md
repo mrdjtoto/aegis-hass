@@ -15,11 +15,22 @@ In this fork Home Assistant **cannot** arm, disarm, bypass or press the panic bu
 ## What you get
 `binary_sensor` (doors and windows, motion, smoke, leak, tamper, CO, heat, glass break…), `sensor` (battery, signal,
 temperature, humidity…), `event` and `update` (read-only firmware info), delivered in real time over the same
-gRPC stream the Ajax app uses. The login, 2FA, re-authentication, device removal and DHCP discovery code is left
+gRPC stream the Ajax app uses.
+
+**Arming state, read-only.** Instead of the alarm panels, the fork adds plain `sensor` entities (device class `enum`)
+on the hub:
+- `… Arming state`: the whole space. Values: `disarmed`, `armed_away`, `armed_night`, `partially_armed` (some groups
+  armed), `arming` / `pending` (exit / entry delay), `triggered`. Attributes: `night_mode`, `group_mode`,
+  `armed_groups`.
+- `… Arming state <group>`: one per group when the space uses Group (Zone) mode, with the list of its `devices`.
+
+They expose no service: you can use them in automations ("the garage is armed", "night mode is on"), but nothing in
+Home Assistant can change them. The login, 2FA, re-authentication, device removal and DHCP discovery code is left
 untouched from the original (this fork has only been tested by its author, on one installation).
 
 ## What is removed
-- No alarm control panel, buttons, switches, lights, locks, valves, numbers, selects or cameras.
+- No alarm control panel, buttons, switches, lights, locks, valves, numbers, selects or cameras (the arming state is
+  shown by the read-only sensors above).
 - No `force_arm`, `force_arm_night`, `disarm_night_mode`, `press_panic_button` or settings services; only the three
   account-session services remain (`list_client_sessions`, `terminate_client_session`, `terminate_other_client_sessions`).
 - On top of that, every API method that sends a command is blocked in code (`@read_only`), so a future change
@@ -40,10 +51,11 @@ the upstream documentation below.
 - **This fork does not protect the stored credentials.** Home Assistant keeps the Ajax password hash and session
   token in `core.config_entries`; anyone who can read that file can talk to Ajax directly. Treat it like any other
   secret: restrict access to the host, and change the Ajax password if you suspect a leak.
-- For the alarm *state* and arm/disarm *notifications* you can use Home Assistant's built-in, one-way
-  [SIA integration](https://www.home-assistant.io/integrations/sia/) (the hub sends events, Home Assistant cannot reply).
-  An automation on the SIA disarm event (`OG` on the hubs we have seen; `CG` is arming) tells you whenever the alarm
-  is disarmed, whoever did it.
+- The arming-state sensors come from the Ajax cloud, like everything else in Aegis: no internet or an expired
+  session means no updates. If you need the alarm state locally, Home Assistant's built-in, one-way
+  [SIA integration](https://www.home-assistant.io/integrations/sia/) receives it straight from the hub (the hub sends
+  events, Home Assistant cannot reply). An automation on the SIA disarm event (`OG` on the hubs we have seen; `CG` is
+  arming) tells you whenever the alarm is disarmed, whoever did it.
 
 ## Not affiliated
 Unofficial and not endorsed by Ajax Systems. MIT licensed, like the original. Use at your own risk.
