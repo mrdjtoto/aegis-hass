@@ -49,6 +49,7 @@ from custom_components.aegis_ajax.api.hts.protocol import (
     encode_frame,
     pad16,
 )
+from custom_components.aegis_ajax.api.readonly import read_only
 
 if TYPE_CHECKING:
     from collections.abc import Callable, Mapping
@@ -787,6 +788,7 @@ class HtsClient:
                 succeeded.append(session_id)
         return succeeded
 
+    @read_only
     async def restore_after_alarm(self, hub_id: str) -> int:
         """Send the app's "Restore" command to a hub (#572); return the answer code."""
         hub = int(hub_id, 16)
@@ -800,6 +802,7 @@ class HtsClient:
             ],
         )
 
+    @read_only
     async def write_device_parameter(
         self, hub_id: str, object_type: int, device_id: str, key: int, value: bytes
     ) -> int:
@@ -823,6 +826,7 @@ class HtsClient:
             int(hub_id, 16), params, msg_type=WRITE_PARAMETER_MSG_TYPE
         )
 
+    @read_only
     async def _send_hub_command(
         self, hub: int, params: list[bytes], *, msg_type: int = HUB_COMMAND_MSG_TYPE
     ) -> int:

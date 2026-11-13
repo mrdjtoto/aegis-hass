@@ -1,6 +1,6 @@
 {
     "domain": "aegis_ajax",
-    "name": "Aegis for Ajax",
+    "name": "Aegis for Ajax (read-only)",
     "after_dependencies": ["web_rtc"],
     "codeowners": ["@bvis"],
     "config_flow": true,

@@ -14,6 +14,7 @@ from custom_components.aegis_ajax.api.models import (
     SpaceSnapshot,
 )
 from custom_components.aegis_ajax.const import ChimeStatus, ConnectionStatus, SecurityState
+from custom_components.aegis_ajax.api.readonly import read_only
 
 # GroupSecurity.State proto enum:
 #   GROUP_SECURITY_STATE_NONE = 0
@@ -280,6 +281,7 @@ class SpacesApi:
         snapshot = await self.get_space_snapshot(space_id)
         return list(snapshot.rooms)
 
+    @read_only
     async def press_panic_button(
         self,
         space_id: str,
