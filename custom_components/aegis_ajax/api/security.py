@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import logging
 from typing import TYPE_CHECKING
+from custom_components.aegis_ajax.api.readonly import read_only
 
 if TYPE_CHECKING:
     from custom_components.aegis_ajax.api.client import AjaxGrpcClient
@@ -29,6 +30,7 @@ class SecurityApi:
     def __init__(self, client: AjaxGrpcClient) -> None:
         self._client = client
 
+    @read_only
     async def arm(self, space_id: str, ignore_alarms: bool = False) -> None:
         from systems.ajax.api.mobile.v2.common.space import space_locator_pb2  # noqa: PLC0415
         from systems.ajax.api.mobile.v2.space.security import (  # noqa: PLC0415
@@ -53,6 +55,7 @@ class SecurityApi:
             raise SecurityError(error_type)
         _LOGGER.debug("Armed space %s", space_id)
 
+    @read_only
     async def disarm(self, space_id: str) -> None:
 
         import asyncio  # noqa: PLC0415
@@ -87,6 +90,7 @@ class SecurityApi:
                 continue
             raise SecurityError(error_type)
 
+    @read_only
     async def arm_night_mode(self, space_id: str, ignore_alarms: bool = False) -> None:
 
         from systems.ajax.api.mobile.v2.common.space import space_locator_pb2  # noqa: PLC0415
@@ -112,6 +116,7 @@ class SecurityApi:
             raise SecurityError(error_type)
         _LOGGER.debug("Armed space %s in night mode", space_id)
 
+    @read_only
     async def disarm_from_night_mode(self, space_id: str) -> None:
 
         from systems.ajax.api.mobile.v2.common.space import space_locator_pb2  # noqa: PLC0415
@@ -132,6 +137,7 @@ class SecurityApi:
             raise SecurityError(response.failure.WhichOneof("error") or "disarm_rejected")
         _LOGGER.debug("Disarmed space %s from night mode", space_id)
 
+    @read_only
     async def arm_group(self, space_id: str, group_id: str, ignore_alarms: bool = False) -> None:
 
         from systems.ajax.api.mobile.v2.common.space import space_locator_pb2  # noqa: PLC0415
@@ -156,6 +162,7 @@ class SecurityApi:
             raise SecurityError(response.failure.WhichOneof("error") or "arm_group_rejected")
         _LOGGER.debug("Armed group %s in space %s", group_id, space_id)
 
+    @read_only
     async def disarm_group(self, space_id: str, group_id: str) -> None:
 
         from systems.ajax.api.mobile.v2.common.space import space_locator_pb2  # noqa: PLC0415

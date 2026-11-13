@@ -19,6 +19,7 @@ from custom_components.aegis_ajax.api.devices_parser import (
     _redact_proto_bytes_to_hex,
 )
 from custom_components.aegis_ajax.const import CLIENT_VERSION
+from custom_components.aegis_ajax.api.readonly import read_only
 
 if TYPE_CHECKING:
     from collections.abc import Callable
@@ -960,6 +961,7 @@ class DevicesApi:
         task: asyncio.Task[None] = asyncio.create_task(_run_stream())
         return task
 
+    @read_only
     async def send_command(self, command: DeviceCommand) -> None:
         """Dispatch a device command to the right v3 DeviceCommand* service.
 
@@ -983,6 +985,7 @@ class DevicesApi:
         else:
             raise DeviceCommandError(f"Unknown device command action: {command.action}")
 
+    @read_only
     async def _update_siren_settings(self, command: DeviceCommand) -> None:
         """Change a siren's alarm duration and/or volume via UpdateHubDevice (#310).
 
@@ -1033,6 +1036,7 @@ class DevicesApi:
             command.siren_volume_level,
         )
 
+    @read_only
     async def _update_night_mode_arm(self, command: DeviceCommand) -> None:
         """Change a detector's "Arm in Night Mode" setting via UpdateHubDevice (#579).
 
@@ -1077,6 +1081,7 @@ class DevicesApi:
             raise DeviceCommandError(f"night_mode_arm: {error}", reason=error)
         _LOGGER.debug("Device %s night_mode_arm=%s OK", command.device_id, command.night_mode_arm)
 
+    @read_only
     async def _device_bypass(self, command: DeviceCommand) -> None:
         """Deactivate / reactivate a device via DeviceCommandDeviceBypass (#338).
 
@@ -1124,6 +1129,7 @@ class DevicesApi:
             raise DeviceCommandError(f"bypass: {error}", reason=error)
         _LOGGER.debug("Device %s bypass=%s OK", command.device_id, bool(command.bypass_enable))
 
+    @read_only
     async def _device_on(self, command: DeviceCommand) -> None:
         from v3.mobilegwsvc.service.device_command_device_on import (  # noqa: PLC0415
             endpoint_pb2_grpc,
@@ -1150,6 +1156,7 @@ class DevicesApi:
             raise DeviceCommandError(f"on: {error}", reason=error)
         _LOGGER.debug("Device %s on (channels=%s) OK", command.device_id, command.channels)
 
+    @read_only
     async def _device_off(self, command: DeviceCommand) -> None:
         from v3.mobilegwsvc.service.device_command_device_off import (  # noqa: PLC0415
             endpoint_pb2_grpc,
@@ -1173,6 +1180,7 @@ class DevicesApi:
             raise DeviceCommandError(f"off: {error}", reason=error)
         _LOGGER.debug("Device %s off (channels=%s) OK", command.device_id, command.channels)
 
+    @read_only
     async def _device_brightness(self, command: DeviceCommand) -> None:
         from v3.mobilegwsvc.service.device_command_brightness import (  # noqa: PLC0415
             endpoint_pb2_grpc,
@@ -1207,6 +1215,7 @@ class DevicesApi:
             command.channels,
         )
 
+    @read_only
     async def switch_smart_lock(self, space_id: str, smart_lock_id: str, action: int) -> None:
         """Lock / unlock / unlatch a SmartLock or LockBridge.
 
@@ -1428,6 +1437,7 @@ class DevicesApi:
             _LOGGER.exception("Error capturing photo for %s", device_id)
             return None
 
+    @read_only
     async def set_photo_on_demand_mode(
         self,
         hub_id: str,
@@ -1500,6 +1510,7 @@ class DevicesApi:
                 label,
             )
 
+    @read_only
     async def start_sound_test(self, hub_id: str, device_id: str, device_type: str) -> None:
         """Play a siren's test sound (#549), the app's *Test* button in siren settings.
 
@@ -1524,6 +1535,7 @@ class DevicesApi:
             raise DeviceCommandError(f"sound_test: {error}", reason=error)
         _LOGGER.debug("Device %s sound test started", device_id)
 
+    @read_only
     async def set_chimes_mode(self, hub_id: str, *, enable: bool) -> None:
         """Enable/disable the hub-wide Chime (#239).
 

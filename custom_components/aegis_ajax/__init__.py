@@ -114,34 +114,23 @@ _PHOTO_CLEANUP_LOCK = asyncio.Lock()
 
 _FCM_KEYS = {"fcm_project_id", "fcm_app_id", "fcm_api_key", "fcm_sender_id"}
 
-PLATFORMS_COMMANDS_ONLY = [Platform.ALARM_CONTROL_PANEL]
+# READ-ONLY BUILD: only platforms that read state. No alarm panel, button, switch, light, lock, valve,
+# number or select, so Home Assistant has nothing to arm, disarm, bypass, switch or reconfigure with.
+PLATFORMS_COMMANDS_ONLY: list[Platform] = []
 
 PLATFORMS = [
-    Platform.ALARM_CONTROL_PANEL,
     Platform.BINARY_SENSOR,
-    Platform.BUTTON,
-    Platform.CAMERA,
     Platform.EVENT,
-    Platform.NUMBER,
-    Platform.SELECT,
     Platform.SENSOR,
-    Platform.SWITCH,
-    Platform.LIGHT,
-    Platform.LOCK,
     Platform.UPDATE,
-    Platform.VALVE,
 ]
 
 type AjaxCobrandedConfigEntry = ConfigEntry[AjaxCobrandedCoordinator]
 
 # Domain-level custom services, registered once in async_setup (#603).
 _CUSTOM_SERVICE_NAMES = (
-    "force_arm",
-    "force_arm_night",
-    "disarm_night_mode",
-    "press_panic_button",
-    "set_photo_on_demand_mode",
-    "refresh_alarm_images",
+    # READ-ONLY BUILD: only account/session inspection stays. The services that arm, disarm, press the
+    # panic button or change settings are not registered (their handlers below are unreachable).
     "list_client_sessions",
     "terminate_client_session",
     "terminate_other_client_sessions",
