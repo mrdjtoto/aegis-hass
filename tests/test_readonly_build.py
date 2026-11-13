@@ -71,3 +71,12 @@ def test_no_arming_service_is_registered() -> None:
         if isinstance(node, ast.Assign) and any(getattr(t, "id", "") == "_CUSTOM_SERVICE_NAMES" for t in node.targets):
             names = tuple(e.value for e in node.value.elts)
     assert names and not {"force_arm", "force_arm_night", "disarm_night_mode", "press_panic_button"} & set(names)
+
+
+def test_security_state_sensors_send_nothing() -> None:
+    """The arming-state sensors only read the coordinator: no async method, no API object touched."""
+    source = (ROOT / "security_state_sensor.py").read_text()
+    tree = ast.parse(source)
+    assert not [n.name for n in ast.walk(tree) if isinstance(n, ast.AsyncFunctionDef)]
+    for forbidden in ("security_api", "devices_api", "spaces_api", "hts_client", "_client", "async_call_service"):
+        assert forbidden not in source, forbidden
